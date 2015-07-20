@@ -120,7 +120,6 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                       span(ng-if = 'item.id | resolve') {{ (item.id | resolve).name_label }}
                       span(ng-if = '(item.id | resolve).$container') &nbsp;({{ ((item.id | resolve).$container | resolve).name_label }})
             td
-              span.text-info {{ ctrl.backUpRootPath }}
               strong {{ ctrl.jobs[schedule.job].paramsVector.items[0].values[0].path }}
             td {{ ctrl.jobs[schedule.job].paramsVector.items[0].values[0].depth }}
             td {{ ctrl.prettyCron(schedule.cron) }}
