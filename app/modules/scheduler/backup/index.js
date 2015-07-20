@@ -33,12 +33,18 @@ export default angular.module('scheduler.backup', [
     this.scheduleApi = {}
     this.formData = {}
 
-    this.getReady = () => {
+    const refreshRemotes = () => {
+      const selectRemoteId = this.formData.remote && this.formData.remote.id
       return xo.remote.getAll()
-      .then(remotes => this.remotes = remotes)
-      .then(() => this.ready = true)
+      .then(remotes => {
+        const r = {}
+        forEach(remotes, remote => r[remote.id] = remote)
+        this.remotes = r
+        if (selectRemoteId) {
+          this.formData.remote = this.remotes[selectRemoteId]
+        }
+      })
     }
-    this.getReady()
 
     const refreshSchedules = () => {
       return xo.schedule.getAll()
@@ -61,8 +67,14 @@ export default angular.module('scheduler.backup', [
     }
 
     const refresh = () => {
-      return refreshJobs().then(refreshSchedules)
+      return refreshRemotes().then(refreshJobs).then(refreshSchedules)
     }
+
+    this.getReady = () => {
+      return refresh()
+      .then(() => this.ready = true)
+    }
+    this.getReady()
 
     const interval = $interval(() => {
       refresh()
