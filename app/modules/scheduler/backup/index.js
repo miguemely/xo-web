@@ -116,6 +116,7 @@ export default angular.module('scheduler.backup', [
         vm && selectedVms.push(vm)
       })
       const tag = job.paramsVector.items[0].values[0].tag
+      const path = job.paramsVector.items[0].values[0].path
       const depth = job.paramsVector.items[0].values[0].depth
       const cronPattern = schedule.cron
 
@@ -123,11 +124,12 @@ export default angular.module('scheduler.backup', [
       this.formData.selectedVms = selectedVms
       this.formData.tag = tag
       this.formData.depth = depth
+      this.formData.remote = this.remotes[path.$dynParams.id]
       this.formData.scheduleId = schedule.id
       this.scheduleApi.setCron(cronPattern)
     }
 
-    this.save = (id, vms, path, tag, depth, cron, enabled) => {
+    this.save = (id, vms, remote, tag, depth, cron, enabled) => {
       if (!vms.length) {
         notify.warning({
           title: 'No Vms selected',
@@ -135,7 +137,7 @@ export default angular.module('scheduler.backup', [
         })
         return
       }
-      const _save = (id === undefined) ? saveNew(vms, path, tag, depth, cron, enabled) : save(id, vms, path, tag, depth, cron)
+      const _save = (id === undefined) ? saveNew(vms, remote, tag, depth, cron, enabled) : save(id, vms, remote, tag, depth, cron)
       return _save
       .then(() => {
         notify.info({
@@ -149,14 +151,19 @@ export default angular.module('scheduler.backup', [
       })
     }
 
-    const save = (id, vms, path, tag, depth, cron) => {
+    const save = (id, vms, remote, tag, depth, cron) => {
       const schedule = this.schedules[id]
       const job = this.jobs[schedule.job]
       const values = []
       forEach(vms, vm => {
         values.push({
           id: vm.id,
-          path,
+          path: {
+            $dynamic: true,
+            $dynMethod: 'remote.get',
+            $dynParams: {id: remote.id},
+            $dynProperty: 'path'
+          },
           tag,
           depth
         })
@@ -176,12 +183,17 @@ export default angular.module('scheduler.backup', [
       })
     }
 
-    const saveNew = (vms, path, tag, depth, cron, enabled) => {
+    const saveNew = (vms, remote, tag, depth, cron, enabled) => {
       const values = []
       forEach(vms, vm => {
         values.push({
           id: vm.id,
-          path,
+          path: {
+            $dynamic: true,
+            $dynMethod: 'remote.get',
+            $dynParams: {id: remote.id},
+            $dynProperty: 'path'
+          },
           tag,
           depth
         })
