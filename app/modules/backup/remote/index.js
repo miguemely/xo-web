@@ -40,13 +40,21 @@ export default angular.module('backup.remote', [
       $interval.cancel(interval)
     })
 
-    this.sanitizePath = (...paths) => filter(map(paths, s => s && filter(map(s.split('/'), trim)).join('/'))).join('/')
-    this.prepareUrl = (type, host, path) => {
+    const sanitizePath = (...paths) => filter(map(paths, s => s && filter(map(s.split('/'), trim)).join('/'))).join('/')
+    this.prepareUrl = (type, host, path, username, password, domain) => {
       let url = type + ':/'
       if (type === 'nfs') {
         url += '/' + host + ':'
       }
-      url += '/' + this.sanitizePath(path)
+      if (type === 'smb') {
+        url += `/${username}:${password}@${domain}:\\${host}`
+      }
+      path = '/' + sanitizePath(path)
+      if (type === 'smb') {
+        path = path.split('/')
+        path = path.join('\\')
+      }
+      url += path
       return url
     }
 
