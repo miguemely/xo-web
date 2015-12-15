@@ -75,7 +75,7 @@
               strong.text-info &bsol;&bsol;
               | {{ remote.host }}
               strong.text-info &bsol;
-              | {{ remote.share }}
+              | {{ remote.path }}
             td {{ remote.username }}@{{remote.domain}}
             td
               span(ng-if = 'remote.enabled')
@@ -112,7 +112,7 @@
             .input-group(ng-if = 'ctrl.remoteType !== "smb"')
               span.input-group-addon /
               label.sr-only Path
-              input.form-control(type = 'text', ng-model = 'ctrl.path', placeholder = 'path/to/backup', required)
+              input.form-control(type = 'text', ng-model = 'ctrl.path', placeholder = 'path/to/backup')
             .form-group(ng-if = 'ctrl.remoteType === "smb"')
               .input-group
                 span.input-group-addon &bsol;&bsol;
@@ -121,7 +121,7 @@
               .input-group
                 span.input-group-addon &bsol;
                 label.sr-only Path
-                input.form-control(type = 'text', ng-model = 'ctrl.path', placeholder = 'path/to/backup', required)
+                input.form-control(type = 'text', ng-model = 'ctrl.path', placeholder != 'path&bsol;to&bsol;backup')
           br
           .form-inline(ng-if = 'ctrl.remoteType === "smb"')
             .form-group

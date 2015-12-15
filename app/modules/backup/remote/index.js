@@ -47,12 +47,14 @@ export default angular.module('backup.remote', [
         url += '/' + host + ':'
       }
       if (type === 'smb') {
-        url += `/${username}:${password}@${domain}:\\${host}`
+        url += `/${username}:${password}@${domain}\\\\${host}`
       }
-      path = '/' + sanitizePath(path)
+      path = sanitizePath(path)
       if (type === 'smb') {
         path = path.split('/')
-        path = path.join('\\')
+        path = '\0' + path.join('\\')
+      } else {
+        path = '/' + path
       }
       url += path
       return url
@@ -64,7 +66,7 @@ export default angular.module('backup.remote', [
     }
     this.add = (name, url) => xo.remote.create(name, url).then(reset).then(refresh)
     this.remove = id => xo.remote.delete(id).then(refresh)
-    this.enable = id => { console.log('GO !!!'); xo.remote.set(id, undefined, undefined, true).then(refresh) }
+    this.enable = id => xo.remote.set(id, undefined, undefined, true).then(refresh)
     this.disable = id => xo.remote.set(id, undefined, undefined, false).then(refresh)
     this.size = size
 
