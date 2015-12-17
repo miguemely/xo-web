@@ -162,7 +162,9 @@ module.exports = angular.module 'xoWebApp.vm', [
         continue unless oVbd
         oVdi = get oVbd.VDI
         continue unless oVdi
-        VDIs.push oVdi if oVdi and not oVbd.is_cd_drive
+        if oVdi and not oVbd.is_cd_drive
+          oVdi.xoBootable = $scope.isBootable oVdi
+          VDIs.push oVdi
         if (isNumber(oVdi.size))
           oVdi.size = bytesToSizeFilter(oVdi.size)
 
@@ -457,7 +459,7 @@ module.exports = angular.module 'xoWebApp.vm', [
         xo.vdi.migrate id, sr_id
         return
 
-    $scope.saveDisks = (data) ->
+    $scope.saveDisks = (data, vdis) ->
       # Group data by disk.
       disks = {}
       forEach data, (value, key) ->
@@ -466,6 +468,14 @@ module.exports = angular.module 'xoWebApp.vm', [
         return
 
       promises = []
+
+      # Set bootable status
+      forEach vdis, (vdi) ->
+        bootable = vdi.xoBootable
+        if $scope.isBootable(vdi) != bootable
+          id = (get resolveVBD(vdi)).id
+          promises.push (xo.vbd.setBootable id, bootable)
+        return
 
       # Handle SR change.
       forEach disks, (attributes, id) ->
@@ -747,6 +757,7 @@ module.exports = angular.module 'xoWebApp.vm', [
         $scope.addWaiting = false
 
     $scope.isConnected = isConnected = (vdi) -> (get resolveVBD(vdi))?.attached
+    $scope.isBootable = isBootable = (vdi) -> (get resolveVBD(vdi))?.bootable
 
     $scope.isFreeForWriting = isFreeForWriting = (vdi) ->
       free = true
