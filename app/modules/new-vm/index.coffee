@@ -19,6 +19,24 @@ module.exports = angular.module 'xoWebApp.newVm', [
     bytesToSizeFilter
     notify
   ) ->
+    $scope.multipleVmsActive = false
+    $scope.vmsNames = ['VM1', 'VM2']
+    $scope.numberOfVms = 2
+    $scope.newNumberOfVms = 2
+
+    $scope.checkNumberOfVms = ->
+      if $scope.newNumberOfVms && Number.isInteger($scope.newNumberOfVms)
+        $scope.newNumberOfVms = $scope.numberOfVms = Math.min(100,Math.max(2,$scope.newNumberOfVms))
+      else
+        $scope.newNumberOfVms = $scope.numberOfVms = 2
+
+    $scope.refreshNames = ->
+      $scope.defaultName = 'VM'
+      $scope.defaultName = $scope.name_label if $scope.name_label
+      forEach($scope.vmsNames, (name, index) ->
+        $scope.vmsNames[index] = $scope.defaultName + (index+1)
+      )
+
     $scope.configDriveActive = false
     existingDisks = {}
     $scope.saveChange = (position, propertyName, value) ->
@@ -195,7 +213,17 @@ module.exports = angular.module 'xoWebApp.newVm', [
           .then (result) ->
             $scope.coreOsCloudConfig = result
 
-    $scope.createVM = ->
+    $scope.createVMs = ->
+      if !$scope.multipleVmsActive
+        $scope.createVM($scope.name_label)
+        return
+      forEach($scope.vmsNames, (name) ->
+        $scope.createVM(name)
+      )
+      # Send the client on the tree view
+      $state.go 'tree'
+
+    $scope.createVM = (name_label) ->
       {
         CPUs
         pv_args
@@ -204,7 +232,6 @@ module.exports = angular.module 'xoWebApp.newVm', [
         installation_network
         memory
         name_description
-        name_label
         template
         VDIs
         VIFs
@@ -309,8 +336,9 @@ module.exports = angular.module 'xoWebApp.newVm', [
           # Use the generic CloudConfig creation
           xo.vm.createCloudInitConfigDrive(id, $scope.firstSR, $scope.cloudContent)
 
-        # Send the client on the VM view
-        $state.go 'VMs_view', { id }
+        if !$scope.multipleVmsActive
+          # Send the client on the VM view
+          $state.go 'VMs_view', { id }
       .catch (error) ->
         notify.error {
           title: 'VM creation'
